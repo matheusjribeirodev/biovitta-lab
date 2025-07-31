@@ -114,21 +114,34 @@ window.addEventListener('scroll', scrollActive)
 document.addEventListener('DOMContentLoaded', scrollActive)
 
 /*==================== SCROLL REVEAL ANIMATION ====================*/
-// Initialize ScrollReveal
-const sr = ScrollReveal({
-    origin: 'top',
-    distance: '30px',
-    duration: 2000,
-    reset: true
-});
+// Initialize ScrollReveal with better configuration
+function initScrollReveal() {
+    if (typeof ScrollReveal !== 'undefined') {
+        const sr = ScrollReveal({
+            origin: 'bottom',
+            distance: '60px',
+            duration: 1000,
+            delay: 200,
+            reset: false,
+            viewFactor: 0.1,
+            scale: 1
+        });
 
-// Animate elements
-sr.reveal(`.home__data, .home__img,
-           .about__data, .about__img,
-           .services__content, .reviews__content, .units__content,
-           .contact__content, .footer__content`, {
-    interval: 200
-});
+        // Animate sections with specific delays
+        sr.reveal('.home__data', {delay: 100});
+        sr.reveal('.home__visual', {delay: 300, origin: 'right'});
+        sr.reveal('.about__content', {delay: 100});
+        sr.reveal('.services__content', {interval: 150});
+        sr.reveal('.reviews__content', {interval: 200, distance: '40px'});
+        sr.reveal('.units__content', {interval: 150});
+        sr.reveal('.contact__information', {delay: 100});
+        sr.reveal('.footer__content', {delay: 100});
+        sr.reveal('.reviews__google-link', {delay: 400});
+    }
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initScrollReveal);
 
 /*==================== FORM VALIDATION ====================*/
 // Form removed - no longer needed
@@ -292,6 +305,14 @@ window.addEventListener('load', () => {
     // Add loaded class to body for animations
     document.body.classList.add('loaded');
     
+    // Ensure nav toggle is visible on mobile after page load
+    const navToggle = document.getElementById('nav-toggle');
+    if (navToggle && window.innerWidth <= 1023) {
+        navToggle.style.display = 'flex';
+        navToggle.style.visibility = 'visible';
+        navToggle.style.opacity = '1';
+    }
+    
     // Initialize animations
     const homeElements = document.querySelectorAll('.home__circle, .molecule, .floating-element');
     homeElements.forEach((element, index) => {
@@ -360,30 +381,44 @@ document.addEventListener('DOMContentLoaded', function() {
     images.forEach(img => imageObserver.observe(img));
 });
 
-// Add ScrollReveal library if not already included
+// Fallback: Add ScrollReveal library if not already included
 if (typeof ScrollReveal === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js';
     script.onload = function() {
-        // Re-initialize ScrollReveal animations
-        const sr = ScrollReveal({
-            origin: 'top',
-            distance: '60px',
-            duration: 2000,
-            delay: 200,
-            reset: true
-        });
-
-        sr.reveal('.home__data, .about__img, .services__content, .units__content', {});
-        sr.reveal('.home__img', {delay: 400});
-        sr.reveal('.home__social', {delay: 600});
-        sr.reveal('.about__data, .contact__information', {origin: 'left'});
-        sr.reveal('.about__img, .contact__form', {origin: 'right'});
-        sr.reveal('.services__content', {interval: 100});
-        sr.reveal('.units__content', {interval: 100});
+        // Initialize ScrollReveal after loading
+        initScrollReveal();
     };
     document.head.appendChild(script);
 }
+
+/*=============== FORCE NAV TOGGLE VISIBILITY ===============*/
+// Force nav toggle to always be visible on mobile
+function forceNavToggleVisibility() {
+    const navToggle = document.getElementById('nav-toggle');
+    if (navToggle && window.innerWidth <= 1023) {
+        navToggle.style.setProperty('display', 'flex', 'important');
+        navToggle.style.setProperty('visibility', 'visible', 'important');
+        navToggle.style.setProperty('opacity', '1', 'important');
+        navToggle.style.setProperty('position', 'relative', 'important');
+        navToggle.style.setProperty('z-index', '9999', 'important');
+    }
+}
+
+// Run on page load and periodically
+document.addEventListener('DOMContentLoaded', forceNavToggleVisibility);
+window.addEventListener('load', forceNavToggleVisibility);
+window.addEventListener('resize', forceNavToggleVisibility);
+
+// Force every 100ms for the first 5 seconds to prevent any interference
+let attempts = 0;
+const forceInterval = setInterval(() => {
+    forceNavToggleVisibility();
+    attempts++;
+    if (attempts >= 50) { // 50 * 100ms = 5 seconds
+        clearInterval(forceInterval);
+    }
+}, 100);
 
 /*=============== WHATSAPP FLOAT BUTTON ===============*/
 const whatsappFloat = document.querySelector('.whatsapp-float');
